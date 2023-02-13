@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Package Version="5">
+    <PathDelim Value="\"/>
+    <Name Value="DKGraphics"/>
+    <Type Value="RunAndDesignTime"/>
+    <CompilerOptions>
+      <Version Value="11"/>
+      <PathDelim Value="\"/>
+      <SearchPaths>
+        <OtherUnitFiles Value="source"/>
+        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)\"/>
+      </SearchPaths>
+    </CompilerOptions>
+    <Files>
+      <Item>
+        <Filename Value="source\dk_graph.pas"/>
+        <UnitName Value="DK_Graph"/>
+      </Item>
+      <Item>
+        <Filename Value="source\dk_pngdrawer.pas"/>
+        <UnitName Value="DK_PNGDrawer"/>
+      </Item>
+      <Item>
+        <Filename Value="source\dk_statplotter.pas"/>
+        <UnitName Value="DK_StatPlotter"/>
+      </Item>
+      <Item>
+        <Filename Value="source\dk_svgwriter.pas"/>
+        <UnitName Value="DK_SVGWriter"/>
+      </Item>
+    </Files>
+    <RequiredPkgs>
+      <Item>
+        <PackageName Value="DKUtils"/>
+      </Item>
+      <Item>
+        <PackageName Value="FCL"/>
+      </Item>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <UseFileFilters Value="True"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>

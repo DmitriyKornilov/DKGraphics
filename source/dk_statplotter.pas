@@ -61,6 +61,7 @@ const
 
   BAR_MAX_WIDTH_PERCENT_DEFAULT = 30;
   BAR_FRAME_WIDTH_DEFAULT = 1;
+  BAR_MIN_MARGIN_PERCENT_DEFAULT = 20;
   BAR_MARGIN_DEFAULT = 2;
 
 type
@@ -511,6 +512,7 @@ type
     FBarFrameWidth: Integer;
     FBarMargin: Integer;
     FBarMaxWidthPercent: Byte;
+    FBarMinMarginPercent: Byte;
     FBarGradientLightnessIncrement: Byte;
     FBarGradientDemarcationPercent: Byte;
 
@@ -552,6 +554,7 @@ type
 
     property BarFrameWidth: Integer read FBarFrameWidth write FBarFrameWidth;
     property BarMargin: Integer read FBarMargin write FBarMargin;
+    property BarMinMarginPercent: Byte read FBarMinMarginPercent write FBarMinMarginPercent;
     property BarMaxWidthPercent: Byte read FBarMaxWidthPercent write FBarMaxWidthPercent;
     property BarGradientLightnessIncrement: Byte read FBarGradientLightnessIncrement write FBarGradientLightnessIncrement;
     property BarGradientDemarcationPercent: Byte read FBarGradientDemarcationPercent write FBarGradientDemarcationPercent;
@@ -582,11 +585,14 @@ type
     procedure DrawDataProc; override;
     procedure SetXTicks(AValues: TStrVector);
     procedure SetYSeries(AValues: TIntMatrix);
+    procedure SetXTicksFont(AValue: TFont);
+    function GetXTicksFont: TFont;
   public
     constructor Create(const AWidth, AHeight: Integer);
     procedure YSeriesAdd(const AValues: TIntVector);
     property YSeries: TIntMatrix write SetYSeries;
     property XTicks: TStrVector write SetXTicks;
+    property XTicksFont: TFont read GetXTicksFont write SetXTicksFont;
   end;
 
   { TStatPlotterHorizHist }
@@ -596,11 +602,14 @@ type
     procedure DrawDataProc; override;
     procedure SetXSeries(AValues: TIntMatrix);
     procedure SetYTicks(AValues: TStrVector);
+    procedure SetYTicksFont(AValue: TFont);
+    function GetYTicksFont: TFont;
   public
     constructor Create(const AWidth, AHeight: Integer);
     procedure XSeriesAdd(const AValues: TIntVector);
     property XSeries: TIntMatrix write SetXSeries;
     property YTicks: TStrVector write SetYTicks;
+    property YTicksFont: TFont read GetYTicksFont write SetYTicksFont;
   end;
 
 
@@ -723,7 +732,7 @@ begin
   Rects:= FPlotter.DataRectsBottomLeft;
   FPlotter.PNG.BarsHoriz(Rects, FPlotter.GraphColors, FPlotter.GraphColors,
                BarFrameWidth, BarMargin, BarGradientLightnessIncrement,
-               BarGradientDemarcationPercent, BarMaxWidthPercent,
+               BarGradientDemarcationPercent, BarMaxWidthPercent, BarMinMarginPercent,
                FPlotter.BottomAxisGridLinesCoords, FPlotter.BottomAxisTicksValues, M);
   //FPlotter.SVG.BarsHoriz(Rects, FPlotter.GraphColors, FPlotter.GraphColors,
   //             BarFrameWidth, BarMargin, BarGradientLightnessIncrement,
@@ -731,10 +740,21 @@ begin
   //             FPlotter.BottomAxisGridLinesCoords, FPlotter.BottomAxisTicksValues, M);
 end;
 
+function TStatPlotterHorizHist.GetYTicksFont: TFont;
+begin
+  Result:= FPlotter.LeftAxisTicksFont;
+end;
+
 procedure TStatPlotterHorizHist.SetYTicks(AValues: TStrVector);
 begin
   FPlotter.LeftAxisTicksCaptions:= AValues;
   FPlotter.RightAxisTicksCaptions:= AValues;
+end;
+
+procedure TStatPlotterHorizHist.SetYTicksFont(AValue: TFont);
+begin
+  FPlotter.LeftAxisTicksFont.Assign(AValue);
+  FPlotter.RightAxisTicksFont.Assign(AValue);
 end;
 
 constructor TStatPlotterHorizHist.Create(const AWidth, AHeight: Integer);
@@ -870,6 +890,7 @@ begin
 
   FBarFrameWidth:= BAR_FRAME_WIDTH_DEFAULT;
   FBarMargin:= BAR_MARGIN_DEFAULT;
+  FBarMinMarginPercent:= BAR_MIN_MARGIN_PERCENT_DEFAULT;
   FBarMaxWidthPercent:= BAR_MAX_WIDTH_PERCENT_DEFAULT;
   FBarGradientLightnessIncrement:= GRADIENT_LIGHTNESS_INCREMENT_DEFAULT;
   FBarGradientDemarcationPercent:= GRADIENT_DEMARCATION_PERCENT_DEFAULT;
@@ -2434,7 +2455,7 @@ begin
   Rects:= FPlotter.DataRectsLeftBottom;
   FPlotter.PNG.BarsVert(Rects, FPlotter.GraphColors, FPlotter.GraphColors,
                BarFrameWidth, BarMargin, BarGradientLightnessIncrement,
-               BarGradientDemarcationPercent, BarMaxWidthPercent,
+               BarGradientDemarcationPercent, BarMaxWidthPercent, BarMinMarginPercent,
                FPlotter.LeftAxisGridLinesCoords, FPlotter.LeftAxisTicksValues, M);
   //FPlotter.SVG.BarsVert(Rects, FPlotter.GraphColors, FPlotter.GraphColors,
   //             BarFrameWidth, BarMargin, BarGradientLightnessIncrement,
@@ -2442,10 +2463,21 @@ begin
   //             FPlotter.LeftAxisGridLinesCoords, FPlotter.LeftAxisTicksValues, M);
 end;
 
+function TStatPlotterVertHist.GetXTicksFont: TFont;
+begin
+  Result:= FPlotter.BottomAxisTicksFont;
+end;
+
 procedure TStatPlotterVertHist.SetXTicks(AValues: TStrVector);
 begin
   FPlotter.TopAxisTicksCaptions:= AValues;
   FPlotter.BottomAxisTicksCaptions:= AValues;
+end;
+
+procedure TStatPlotterVertHist.SetXTicksFont(AValue: TFont);
+begin
+  FPlotter.BottomAxisTicksFont.Assign(AValue);
+  FPlotter.TopAxisTicksFont.Assign(AValue);
 end;
 
 constructor TStatPlotterVertHist.Create(const AWidth, AHeight: Integer);

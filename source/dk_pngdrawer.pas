@@ -72,12 +72,12 @@ type
                       const ADemarcationPercent: Byte);
     procedure BarsVert(const ARect: TRect;
                        const AMainBGColors, AFrameColors: TColorVector;
-                       const AFrameWidth, ABarMargin, AIncLightess: Integer;
+                       const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues, AYDataValues: TIntVector);
     procedure BarsVert(const ARects: TRectVector;
                        const AMainBGColors, AFrameColors: TColorVector;
-                       const AFrameWidth, ABarMargin, AIncLightess: Integer;
+                       const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues: TIntVector;
                        const AYDataValues: TIntMatrix);
@@ -87,12 +87,12 @@ type
                         const ADemarcationPercent: Byte);
     procedure BarsHoriz(const ARect: TRect;
                          const AMainBGColors, AFrameColors: TColorVector;
-                         const AFrameWidth, ABarMargin, AIncLightess: Integer;
+                         const AFrameWidth, AIncLightess: Integer;
                          const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                          const AXTicksCoords, AXTicksValues, AXDataValues: TIntVector);
     procedure BarsHoriz(const ARects: TRectVector;
                          const AMainBGColors, AFrameColors: TColorVector;
-                         const AFrameWidth, ABarMargin, AIncLightess: Integer;
+                         const AFrameWidth, AIncLightess: Integer;
                          const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                          const AYTicksCoords, AYTicksValues: TIntVector;
                          const AYDataValues: TIntMatrix);
@@ -301,7 +301,7 @@ end;
 
 procedure TPNGDrawer.BarsVert(const ARect: TRect;
                        const AMainBGColors, AFrameColors: TColorVector;
-                       const AFrameWidth, ABarMargin, AIncLightess: Integer;
+                       const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues, AYDataValues: TIntVector);
 var
@@ -309,7 +309,7 @@ var
   MainBGColor, FrameColor: TColor;
   Rects: TRectVector;
 begin
-  Rects:= BarsVertRects(ARect, ABarMargin, AMaxBarWidthPercent, AMinBarMarginPercent,
+  Rects:= BarsVertRects(ARect, AMaxBarWidthPercent, AMinBarMarginPercent,
                         AYTicksCoords, AYTicksValues, AYDataValues);
 
   for i:= 0 to High(Rects) do
@@ -325,7 +325,7 @@ end;
 
 procedure TPNGDrawer.BarsVert(const ARects: TRectVector;
                        const AMainBGColors, AFrameColors: TColorVector;
-                       const AFrameWidth, ABarMargin, AIncLightess: Integer;
+                       const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues: TIntVector;
                        const AYDataValues: TIntMatrix);
@@ -333,8 +333,7 @@ var
   i: Integer;
 begin
   for i:= 0 to High(ARects) do
-    BarsVert(ARects[i], AMainBGColors, AFrameColors,
-             AFrameWidth, ABarMargin, AIncLightess,
+    BarsVert(ARects[i], AMainBGColors, AFrameColors, AFrameWidth, AIncLightess,
              ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent,
              AYTicksCoords, AYTicksValues, AYDataValues[i]);
 end;
@@ -356,7 +355,7 @@ end;
 
 procedure TPNGDrawer.BarsHoriz(const ARect: TRect;
                          const AMainBGColors, AFrameColors: TColorVector;
-                         const AFrameWidth, ABarMargin, AIncLightess: Integer;
+                         const AFrameWidth, AIncLightess: Integer;
                          const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                          const AXTicksCoords, AXTicksValues, AXDataValues: TIntVector);
 var
@@ -364,7 +363,7 @@ var
   MainBGColor, FrameColor: TColor;
   Rects: TRectVector;
 begin
-  Rects:= BarsHorizRects(ARect, ABarMargin, AMaxBarWidthPercent, AMinBarMarginPercent,
+  Rects:= BarsHorizRects(ARect, AMaxBarWidthPercent, AMinBarMarginPercent,
                         AXTicksCoords, AXTicksValues, AXDataValues);
 
   for i:= 0 to High(Rects) do
@@ -380,7 +379,7 @@ end;
 
 procedure TPNGDrawer.BarsHoriz(const ARects: TRectVector;
                          const AMainBGColors, AFrameColors: TColorVector;
-                         const AFrameWidth, ABarMargin, AIncLightess: Integer;
+                         const AFrameWidth, AIncLightess: Integer;
                          const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                          const AYTicksCoords, AYTicksValues: TIntVector;
                          const AYDataValues: TIntMatrix);
@@ -388,8 +387,7 @@ var
   i: Integer;
 begin
   for i:= 0 to High(ARects) do
-    BarsHoriz(ARects[i], AMainBGColors, AFrameColors,
-               AFrameWidth, ABarMargin, AIncLightess,
+    BarsHoriz(ARects[i], AMainBGColors, AFrameColors, AFrameWidth, AIncLightess,
                ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent,
                AYTicksCoords, AYTicksValues, AYDataValues[i]);
 end;

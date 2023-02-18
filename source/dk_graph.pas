@@ -30,12 +30,10 @@ type
 
   {---BARS RECTS --------------------------------------------------------------}
   function BarsVertRects(const ARect: TRect;
-                       const ABarMargin: Integer;
                        const AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues,
                              AYDataValues: TIntVector): TRectVector;
   function BarsHorizRects(const ARect: TRect;
-                        const ABarMargin: Integer;
                         const AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                         const AXTicksCoords, AXTicksValues,
                               AXDataValues: TIntVector): TRectVector;
@@ -159,7 +157,6 @@ end;
 // Bars rects
 
 function BarsVertRects(const ARect: TRect;
-                       const ABarMargin: Integer;
                        const AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues,
                              AYDataValues: TIntVector): TRectVector;
@@ -173,12 +170,11 @@ begin
   BarsCount:= Length(AYDataValues);
   VDimRectVector(Result, BarsCount);
   //constraint max bar width
-  BarWidth:= (ARect.Width - 2*ABarMargin) div BarsCount;
+  BarWidth:= ARect.Width div BarsCount;
   Value:= Trunc(Percent(ARect.Width, AMaxBarWidthPercent));
   BarWidth:= Min(BarWidth, Value);
   //constraint min bar margin
   BarMargin:= Round(Percent(BarWidth, AMinBarMarginPercent));
-  BarMargin:= Max(BarMargin, ABarMargin);
 
   FirstBarLeftCoord:= ARect.Left + BarMargin +
                    ((ARect.Width - BarMargin - BarsCount*BarWidth) div 2);
@@ -200,7 +196,6 @@ begin
 end;
 
 function BarsHorizRects(const ARect: TRect;
-                        const ABarMargin: Integer;
                         const AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                         const AXTicksCoords, AXTicksValues,
                              AXDataValues: TIntVector): TRectVector;
@@ -214,12 +209,11 @@ begin
   BarsCount:= Length(AXDataValues);
   VDimRectVector(Result, BarsCount);
   //constraint max bar height
-  BarHeight:= (ARect.Height - 2*ABarMargin) div BarsCount;
+  BarHeight:= ARect.Height div BarsCount;
   Value:= Trunc(Percent(ARect.Height, AMaxBarWidthPercent));
   BarHeight:= Min(BarHeight, Value);
   //constraint min bar margin
   BarMargin:= Round(Percent(BarHeight, AMinBarMarginPercent));
-  BarMargin:= Max(BarMargin, ABarMargin);
 
   FirstBarTopCoord:= ARect.Top + BarMargin +
                    ((ARect.Height - BarMargin - BarsCount*BarHeight) div 2);

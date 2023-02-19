@@ -228,8 +228,9 @@ begin
                            AXTicksCoords, Result[i].Right) then
     begin
       BarWidth:= Round((AXDataValues[i]/MaxValue)*ARect.Width);
-      Result[i].Right:= Result[i].Left + BarWidth + 1;
+      Result[i].Right:= Result[i].Left + BarWidth;
     end;
+    Result[i].Right:= Result[i].Right + 1;
   end;
 end;
 

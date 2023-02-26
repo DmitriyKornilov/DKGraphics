@@ -88,6 +88,11 @@ type
                       const AFrameWidth, AIncLightess: Integer;
                       const ADemarcationPercent: Byte);
     procedure BarsVert(const ARect: TRect;
+                       const AMainBGColor, AFrameColor: TColor;
+                       const AFrameWidth, AIncLightess: Integer;
+                       const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
+                       const AYTicksCoords, AYTicksValues, AYDataValues: TIntVector);
+    procedure BarsVert(const ARect: TRect;
                        const AMainBGColors, AFrameColors: TColorVector;
                        const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
@@ -97,11 +102,17 @@ type
                        const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues: TIntVector;
-                       const AYDataValues: TIntMatrix);
+                       const AYDataValues: TIntMatrix;
+                       const AOneColorPerTick: Boolean = False);
     procedure BarHoriz(const ARect: TRect;
                         const AMainBGColor, AFrameColor: TColor;
                         const AFrameWidth, AIncLightess: Integer;
                         const ADemarcationPercent: Byte);
+    procedure BarsHoriz(const ARect: TRect;
+                         const AMainBGColor, AFrameColor: TColor;
+                         const AFrameWidth, AIncLightess: Integer;
+                         const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
+                         const AXTicksCoords, AXTicksValues, AXDataValues: TIntVector);
     procedure BarsHoriz(const ARect: TRect;
                          const AMainBGColors, AFrameColors: TColorVector;
                          const AFrameWidth, AIncLightess: Integer;
@@ -111,8 +122,9 @@ type
                          const AMainBGColors, AFrameColors: TColorVector;
                          const AFrameWidth, AIncLightess: Integer;
                          const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
-                         const AYTicksCoords, AYTicksValues: TIntVector;
-                         const AYDataValues: TIntMatrix);
+                         const AXTicksCoords, AXTicksValues: TIntVector;
+                         const AXDataValues: TIntMatrix;
+                         const AOneColorPerTick: Boolean = False);
 
     {---HORIZONTAL (LEFT TO RIGHT) TEXT------------------------------------------}
     //Single left to right string
@@ -409,12 +421,28 @@ begin
 end;
 
 procedure TSVGWriter.BarsVert(const ARect: TRect;
+                       const AMainBGColor, AFrameColor: TColor;
+                       const AFrameWidth, AIncLightess: Integer;
+                       const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
+                       const AYTicksCoords, AYTicksValues, AYDataValues: TIntVector);
+var
+  i: Integer;
+  Rects: TRectVector;
+begin
+  Rects:= BarsVertRects(ARect, AMaxBarWidthPercent, AMinBarMarginPercent,
+                        AYTicksCoords, AYTicksValues, AYDataValues);
+  for i:= 0 to High(Rects) do
+    BarVert(Rects[i], AMainBGColor, AFrameColor, AFrameWidth,
+                AIncLightess, ADemarcationPercent);
+end;
+
+procedure TSVGWriter.BarsVert(const ARect: TRect;
                        const AMainBGColors, AFrameColors: TColorVector;
                        const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues, AYDataValues: TIntVector);
 var
-  i, N: Integer;
+  i: Integer;
   MainBGColor, FrameColor: TColor;
   Rects: TRectVector;
 begin
@@ -423,10 +451,8 @@ begin
 
   for i:= 0 to High(Rects) do
   begin
-    N:= Length(AMainBGColors);
-    MainBGColor:= AMainBGColors[i mod N];
-    N:= Length(AFrameColors);
-    FrameColor:= AFrameColors[i mod N];
+    MainBGColor:= ColorFromVector(AMainBGColors, i);
+    FrameColor:= ColorFromVector(AFrameColors, i);
     BarVert(Rects[i], MainBGColor, FrameColor, AFrameWidth,
                 AIncLightess, ADemarcationPercent);
   end;
@@ -437,14 +463,29 @@ procedure TSVGWriter.BarsVert(const ARects: TRectVector;
                        const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues: TIntVector;
-                       const AYDataValues: TIntMatrix);
+                       const AYDataValues: TIntMatrix;
+                       const AOneColorPerTick: Boolean = False);
 var
   i: Integer;
+  MainBGColor, FrameColor: TColor;
 begin
-  for i:= 0 to High(ARects) do
-    BarsVert(ARects[i], AMainBGColors, AFrameColors, AFrameWidth, AIncLightess,
-             ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent,
-             AYTicksCoords, AYTicksValues, AYDataValues[i]);
+  if AOneColorPerTick then
+  begin
+    for i:= 0 to High(ARects) do
+    begin
+      MainBGColor:= ColorFromVector(AMainBGColors, i);
+      FrameColor:= ColorFromVector(AFrameColors, i);
+      BarsVert(ARects[i], MainBGColor, FrameColor, AFrameWidth, AIncLightess,
+               ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent,
+               AYTicksCoords, AYTicksValues, AYDataValues[i]);
+    end;
+  end
+  else begin
+    for i:= 0 to High(ARects) do
+      BarsVert(ARects[i], AMainBGColors, AFrameColors, AFrameWidth, AIncLightess,
+               ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent,
+               AYTicksCoords, AYTicksValues, AYDataValues[i]);
+  end;
 end;
 
 procedure TSVGWriter.BarHoriz(const ARect: TRect;
@@ -463,12 +504,28 @@ begin
 end;
 
 procedure TSVGWriter.BarsHoriz(const ARect: TRect;
+                         const AMainBGColor, AFrameColor: TColor;
+                         const AFrameWidth, AIncLightess: Integer;
+                         const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
+                         const AXTicksCoords, AXTicksValues, AXDataValues: TIntVector);
+var
+  i: Integer;
+  Rects: TRectVector;
+begin
+  Rects:= BarsHorizRects(ARect, AMaxBarWidthPercent, AMinBarMarginPercent,
+                        AXTicksCoords, AXTicksValues, AXDataValues);
+  for i:= 0 to High(Rects) do
+    BarHoriz(Rects[i], AMainBGColor, AFrameColor, AFrameWidth,
+                AIncLightess, ADemarcationPercent);
+end;
+
+procedure TSVGWriter.BarsHoriz(const ARect: TRect;
                          const AMainBGColors, AFrameColors: TColorVector;
                          const AFrameWidth, AIncLightess: Integer;
                          const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                          const AXTicksCoords, AXTicksValues, AXDataValues: TIntVector);
 var
-  i, N: Integer;
+  i: Integer;
   MainBGColor, FrameColor: TColor;
   Rects: TRectVector;
 begin
@@ -477,10 +534,8 @@ begin
 
   for i:= 0 to High(Rects) do
   begin
-    N:= Length(AMainBGColors);
-    MainBGColor:= AMainBGColors[i mod N];
-    N:= Length(AFrameColors);
-    FrameColor:= AFrameColors[i mod N];
+    MainBGColor:= ColorFromVector(AMainBGColors, i);
+    FrameColor:= ColorFromVector(AFrameColors, i);
     BarHoriz(Rects[i], MainBGColor, FrameColor, AFrameWidth,
                 AIncLightess, ADemarcationPercent);
   end;
@@ -490,15 +545,30 @@ procedure TSVGWriter.BarsHoriz(const ARects: TRectVector;
                          const AMainBGColors, AFrameColors: TColorVector;
                          const AFrameWidth, AIncLightess: Integer;
                          const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
-                         const AYTicksCoords, AYTicksValues: TIntVector;
-                         const AYDataValues: TIntMatrix);
+                         const AXTicksCoords, AXTicksValues: TIntVector;
+                         const AXDataValues: TIntMatrix;
+                         const AOneColorPerTick: Boolean = False);
 var
   i: Integer;
+  MainBGColor, FrameColor: TColor;
 begin
-  for i:= 0 to High(ARects) do
-    BarsHoriz(ARects[i], AMainBGColors, AFrameColors, AFrameWidth, AIncLightess,
+  if AOneColorPerTick then
+  begin
+    for i:= 0 to High(ARects) do
+    begin
+      MainBGColor:= ColorFromVector(AMainBGColors, i);
+      FrameColor:= ColorFromVector(AFrameColors, i);
+      BarsHoriz(ARects[i], MainBGColor, FrameColor, AFrameWidth, AIncLightess,
                ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent,
-               AYTicksCoords, AYTicksValues, AYDataValues[i]);
+               AXTicksCoords, AXTicksValues, AXDataValues[i]);
+    end;
+  end
+  else begin
+    for i:= 0 to High(ARects) do
+      BarsHoriz(ARects[i], AMainBGColors, AFrameColors, AFrameWidth, AIncLightess,
+               ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent,
+               AXTicksCoords, AXTicksValues, AXDataValues[i]);
+  end;
 end;
 
 function TSVGWriter.ScaleX(const ASize: Integer): Integer;

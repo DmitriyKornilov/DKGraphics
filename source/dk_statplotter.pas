@@ -41,23 +41,34 @@ const
   LEGEND_VERT_MARGIN_DEFAULT  = 2*MARGIN_DEFAULT;   // between legend values if vertical
   LEGEND_TOP_MARGIN_DEFAULT   = 5*MARGIN_DEFAULT;   // between legend and other
 
-  GRAPH_COLORS_DEFAULT: array [0..9] of TColor = (
-    $00BF6515,  //blue
-    $00006AEE,  //orange
-    $003E9939,  //green
-    $009B009B,  //violet
-    $002F2FD3,  //red
-    $007A6E54,  //grey
-    $00009EC0,  //olive
-    $008E8200,  //teal
-    $00505D86,  //brown
-    $00834FEE   //pink
+  //GRAPH_COLORS_DEFAULT: array [0..9] of TColor = (
+  //  $00BF6515,  //blue
+  //  $00006AEE,  //orange
+  //  $003E9939,  //green
+  //  $009B009B,  //violet
+  //  $002F2FD3,  //red
+  //  $007A6E54,  //grey
+  //  $00009EC0,  //olive
+  //  $008E8200,  //teal
+  //  $00505D86,  //brown
+  //  $00834FEE   //pink
+  //);
+
+
+
+  GRAPH_COLORS_DEFAULT: array [0..4] of TColor = (
+    $00BD814F, //blue
+    $004696F7, //orange
+    $0059BB9B, //green
+    $00A26480, //violet
+    $004D50C0  //red
   );
 
-  GRADIENT_LIGHTNESS_INCREMENT_DEFAULT = 30;
+  GRADIENT_LIGHTNESS_INCREMENT_DEFAULT = 20;
   GRADIENT_DEMARCATION_PERCENT_DEFAULT = 70;
 
   TICKS_MAX_COUNT_DEFAULT = 10;
+
 
   BAR_MAX_WIDTH_PERCENT_DEFAULT = 30;
   BAR_FRAME_WIDTH_DEFAULT = 1;
@@ -115,6 +126,7 @@ type
     FTopAxisTitleFrameColor: TColor;
     FTopAxisTitleFrameWidth: Integer;
     FTopAxisTitleRect: TRect;
+    FTopAxisTitleVisible: Boolean;
     //BottomAxisTitle
     FBottomAxisTitle: String;
     FBottomAxisTitleRowValues: TStrVector;
@@ -123,6 +135,7 @@ type
     FBottomAxisTitleFrameColor: TColor;
     FBottomAxisTitleFrameWidth: Integer;
     FBottomAxisTitleRect: TRect;
+    FBottomAxisTitleVisible: Boolean;
     //LeftAxisTitle
     FLeftAxisTitle: String;
     FLeftAxisTitleRowValues: TStrVector;
@@ -131,6 +144,7 @@ type
     FLeftAxisTitleFrameColor: TColor;
     FLeftAxisTitleFrameWidth: Integer;
     FLeftAxisTitleRect: TRect;
+    FLeftAxisTitleVisible: Boolean;
     //RightAxisTitle
     FRightAxisTitle: String;
     FRightAxisTitleRowValues: TStrVector;
@@ -139,6 +153,7 @@ type
     FRightAxisTitleFrameColor: TColor;
     FRightAxisTitleFrameWidth: Integer;
     FRightAxisTitleRect: TRect;
+    FRightAxisTitleVisible: Boolean;
 
     //TopAxisTicks
     FTopAxisTicksValues: TIntVector;
@@ -381,28 +396,28 @@ type
     property TopAxisTitleBGColor: TColor read FTopAxisTitleBGColor write FTopAxisTitleBGColor;
     property TopAxisTitleFrameColor: TColor read FTopAxisTitleFrameColor write FTopAxisTitleFrameColor;
     property TopAxisTitleFrameWidth: Integer read FTopAxisTitleFrameWidth write FTopAxisTitleFrameWidth;
-    property TopAxisTitleVisible: Boolean read GetTopAxisTitleVisible;
+    property TopAxisTitleVisible: Boolean read GetTopAxisTitleVisible write FTopAxisTitleVisible;
     //BottomAxisTitle
     property BottomAxisTitle: String read FBottomAxisTitle write SetBottomAxisTitle;
     property BottomAxisTitleFont: TFont read FBottomAxisTitleFont write SetBottomAxisTitleFont;
     property BottomAxisTitleBGColor: TColor read FBottomAxisTitleBGColor write FBottomAxisTitleBGColor;
     property BottomAxisTitleFrameColor: TColor read FBottomAxisTitleFrameColor write FBottomAxisTitleFrameColor;
     property BottomAxisTitleFrameWidth: Integer read FBottomAxisTitleFrameWidth write FBottomAxisTitleFrameWidth;
-    property BottomAxisTitleVisible: Boolean read GetBottomAxisTitleVisible;
+    property BottomAxisTitleVisible: Boolean read GetBottomAxisTitleVisible write FBottomAxisTitleVisible;
     //LeftAxisTitle
     property LeftAxisTitle: String read FLeftAxisTitle write SetLeftAxisTitle;
     property LeftAxisTitleFont: TFont read FLeftAxisTitleFont write SetLeftAxisTitleFont;
     property LeftAxisTitleBGColor: TColor read FLeftAxisTitleBGColor write FLeftAxisTitleBGColor;
     property LeftAxisTitleFrameColor: TColor read FLeftAxisTitleFrameColor write FLeftAxisTitleFrameColor;
     property LeftAxisTitleFrameWidth: Integer read FLeftAxisTitleFrameWidth write FLeftAxisTitleFrameWidth;
-    property LeftAxisTitleVisible: Boolean read GetLeftAxisTitleVisible;
+    property LeftAxisTitleVisible: Boolean read GetLeftAxisTitleVisible write FLeftAxisTitleVisible;
     //RightAxisTitle
     property RightAxisTitle: String read FRightAxisTitle write SetRightAxisTitle;
     property RightAxisTitleFont: TFont read FRightAxisTitleFont write SetRightAxisTitleFont;
     property RightAxisTitleBGColor: TColor read FRightAxisTitleBGColor write FRightAxisTitleBGColor;
     property RightAxisTitleFrameColor: TColor read FRightAxisTitleFrameColor write FRightAxisTitleFrameColor;
     property RightAxisTitleFrameWidth: Integer read FRightAxisTitleFrameWidth write FRightAxisTitleFrameWidth;
-    property RightAxisTitleVisible: Boolean read GetRightAxisTitleVisible;
+    property RightAxisTitleVisible: Boolean read GetRightAxisTitleVisible write FRightAxisTitleVisible;
 
     //TopAxisTicks
     property TopAxisTicksCaptions: TStrVector read FTopAxisTicksCaptions write SetTopAxisTicksCaptions;
@@ -513,15 +528,19 @@ type
     FBarMinMarginPercent: Byte;
     FBarGradientLightnessIncrement: Byte;
     FBarGradientDemarcationPercent: Byte;
-
+    FOneColorPerTick: Boolean;
+    FColorIndexes: TIntVector;
 
 
     function GetLegendFont: TFont;
     function GetPNG: TPNGDrawer;
+
     //function GetSVG: TSVGWriter;
-    function GetTitleFont: TFont;
+
     procedure SetDataFrameColor(AValue: TColor);
     procedure SetDataFrameWidth(AValue: Integer);
+
+    procedure SetColorIndexes(AValue: TIntVector);
 
     procedure SetXAxisType(AValue: THorizAxisType);
     procedure SetYAxisType(AValue: TVertAxisType);
@@ -536,7 +555,16 @@ type
     procedure SetLegendFont(AValue: TFont);
 
     procedure SetTitle(AValue: String);
+    function GetTitleFont: TFont;
     procedure SetTitleFont(AValue: TFont);
+
+    procedure SetHorizAxisTitle(AValue: String);
+    function GetHorizAxisTitleFont: TFont;
+    procedure SetHorizAxisTitleFont(AValue: TFont);
+
+    procedure SetVertAxisTitle(AValue: String);
+    function GetVertAxisTitleFont: TFont;
+    procedure SetVertAxisTitleFont(AValue: TFont);
 
 
     procedure DrawDataProc; virtual; abstract;
@@ -549,6 +577,9 @@ type
 
     procedure Calc;
     procedure Draw(const ACanvas: TCanvas; const X: Integer = 0; const Y: Integer = 0);
+
+    property OneColorPerTick: Boolean read FOneColorPerTick write FOneColorPerTick;
+    property ColorIndexes: TIntVector read FColorIndexes write SetColorIndexes;
 
     property BarFrameWidth: Integer read FBarFrameWidth write FBarFrameWidth;
     property BarMinMarginPercent: Byte read FBarMinMarginPercent write FBarMinMarginPercent;
@@ -565,6 +596,12 @@ type
     property Title: String write SetTitle;
     property TitleFont: TFont read GetTitleFont write SetTitleFont;
 
+    property HorizAxisTitle: String write SetHorizAxisTitle;
+    property HorizAxisTitleFont: TFont read GetHorizAxisTitleFont write SetHorizAxisTitleFont;
+
+    property VertAxisTitle: String write SetVertAxisTitle;
+    property VertAxisTitleFont: TFont read GetVertAxisTitleFont write SetVertAxisTitleFont;
+
     property Legend: TStrVector write SetLegend;
     property LegendFont: TFont read GetLegendFont write SetLegendFont;
 
@@ -580,16 +617,18 @@ type
   TStatPlotterVertHist = class(TStatPlotterBar)
   private
     procedure DrawDataProc; override;
+
     procedure SetYSeries(AValues: TIntMatrix);
+    function  GetYTicksFont: TFont;
+    procedure SetYTicksFont(AValue: TFont);
     procedure SetXTicks(AValues: TStrVector);
-    procedure SetXTicksVisible(AValue: Boolean);
+    function  GetXTicksFont: TFont;
     procedure SetXTicksFont(AValue: TFont);
-    function GetXTicksFont: TFont;
   public
     constructor Create(const AWidth, AHeight: Integer);
     procedure YSeriesAdd(const AValues: TIntVector);
     property YSeries: TIntMatrix write SetYSeries;
-    property XTicksVisible: Boolean write SetXTicksVisible;
+    property YTicksFont: TFont read GetYTicksFont write SetYTicksFont;
     property XTicks: TStrVector write SetXTicks;
     property XTicksFont: TFont read GetXTicksFont write SetXTicksFont;
   end;
@@ -599,16 +638,18 @@ type
   TStatPlotterHorizHist = class(TStatPlotterBar)
   private
     procedure DrawDataProc; override;
+
     procedure SetXSeries(AValues: TIntMatrix);
-    procedure SetYTicksVisible(AValue: Boolean);
+    function  GetXTicksFont: TFont;
+    procedure SetXTicksFont(AValue: TFont);
     procedure SetYTicks(AValues: TStrVector);
     procedure SetYTicksFont(AValue: TFont);
-    function GetYTicksFont: TFont;
+    function  GetYTicksFont: TFont;
   public
     constructor Create(const AWidth, AHeight: Integer);
     procedure XSeriesAdd(const AValues: TIntVector);
     property XSeries: TIntMatrix write SetXSeries;
-    property YTicksVisible: Boolean write SetYTicksVisible;
+    property XTicksFont: TFont read GetXTicksFont write SetXTicksFont;
     property YTicks: TStrVector write SetYTicks;
     property YTicksFont: TFont read GetYTicksFont write SetYTicksFont;
   end;
@@ -734,22 +775,23 @@ begin
   FPlotter.PNG.BarsHoriz(Rects, FPlotter.GraphColors, FPlotter.GraphColors,
                BarFrameWidth, BarGradientLightnessIncrement,
                BarGradientDemarcationPercent, BarMaxWidthPercent, BarMinMarginPercent,
-               FPlotter.BottomAxisGridLinesCoords, FPlotter.BottomAxisTicksValues, M);
+               FPlotter.BottomAxisGridLinesCoords, FPlotter.BottomAxisTicksValues, M,
+               FOneColorPerTick, FColorIndexes);
   //FPlotter.SVG.BarsHoriz(Rects, FPlotter.GraphColors, FPlotter.GraphColors,
   //             BarFrameWidth, BarGradientLightnessIncrement,
   //             BarGradientDemarcationPercent, BarMaxWidthPercent,
-  //             FPlotter.BottomAxisGridLinesCoords, FPlotter.BottomAxisTicksValues, M);
+  //             FPlotter.BottomAxisGridLinesCoords, FPlotter.BottomAxisTicksValues, M,
+  //             FOneColorPerTick, FColorIndexes);
+end;
+
+function TStatPlotterHorizHist.GetXTicksFont: TFont;
+begin
+  Result:= FPlotter.BottomAxisTicksFont;
 end;
 
 function TStatPlotterHorizHist.GetYTicksFont: TFont;
 begin
   Result:= FPlotter.LeftAxisTicksFont;
-end;
-
-procedure TStatPlotterHorizHist.SetYTicksVisible(AValue: Boolean);
-begin
-  FPlotter.LeftAxisTicksVisible:= AValue;
-  FPlotter.RightAxisTicksVisible:= AValue;
 end;
 
 procedure TStatPlotterHorizHist.SetYTicks(AValues: TStrVector);
@@ -790,6 +832,12 @@ begin
   FPlotter.TopAxisSeries:= AValues;
 end;
 
+procedure TStatPlotterHorizHist.SetXTicksFont(AValue: TFont);
+begin
+  FPlotter.TopAxisTicksFont.Assign(AValue);
+  FPlotter.BottomAxisTicksFont.Assign(AValue);
+end;
+
 { TStatPlotterBar }
 
 procedure TStatPlotterBar.SetFrameColor(AValue: TColor);
@@ -812,6 +860,35 @@ begin
   FPlotter.GraphFrameWidth:= AValue;
 end;
 
+procedure TStatPlotterBar.SetHorizAxisTitle(AValue: String);
+begin
+  FPlotter.BottomAxisTitle:= AValue;
+  FPlotter.TopAxisTitle:= AValue;
+end;
+
+procedure TStatPlotterBar.SetHorizAxisTitleFont(AValue: TFont);
+begin
+  FPlotter.BottomAxisTitleFont.Assign(AValue);
+  FPlotter.TopAxisTitleFont.Assign(AValue);
+end;
+
+procedure TStatPlotterBar.SetVertAxisTitle(AValue: String);
+begin
+  FPlotter.LeftAxisTitle:= AValue;
+  FPlotter.RightAxisTitle:= AValue;
+end;
+
+function TStatPlotterBar.GetVertAxisTitleFont: TFont;
+begin
+  Result:= FPlotter.LeftAxisTitleFont;
+end;
+
+procedure TStatPlotterBar.SetVertAxisTitleFont(AValue: TFont);
+begin
+  FPlotter.LeftAxisTitleFont.Assign(AValue);
+  FPlotter.RightAxisTitleFont.Assign(AValue);
+end;
+
 procedure TStatPlotterBar.SetVertGridLinesVisible(AValue: Boolean);
 begin
   FPlotter.LeftAxisGridLinesVisible:= AValue;
@@ -825,6 +902,13 @@ begin
     FPlotter.BottomAxisTicksVisible:= False
   else if AValue=hatBottom then
     FPlotter.TopAxisTicksVisible:= False;
+
+  FPlotter.TopAxisTitleVisible:= True;
+  FPlotter.BottomAxisTitleVisible:= True;
+  if AValue=hatTop then
+    FPlotter.BottomAxisTitleVisible:= False
+  else if AValue=hatBottom then
+    FPlotter.TopAxisTitleVisible:= False;
 end;
 
 function TStatPlotterBar.GetLegendFont: TFont;
@@ -832,9 +916,19 @@ begin
   Result:= FPlotter.LegendFont;
 end;
 
+function TStatPlotterBar.GetHorizAxisTitleFont: TFont;
+begin
+  Result:= FPlotter.BottomAxisTitleFont;
+end;
+
 function TStatPlotterBar.GetPNG: TPNGDrawer;
 begin
   Result:= FPlotter.PNG;
+end;
+
+procedure TStatPlotterBar.SetColorIndexes(AValue: TIntVector);
+begin
+  FColorIndexes:= VCut(AValue);
 end;
 
 //function TStatPlotterBar.GetSVG: TSVGWriter;
@@ -875,6 +969,13 @@ begin
     FPlotter.RightAxisTicksVisible:= False
   else if AValue=vatRight then
     FPlotter.LeftAxisTicksVisible:= False;
+
+  FPlotter.LeftAxisTitleVisible:= True;
+  FPlotter.RightAxisTitleVisible:= True;
+  if AValue=vatLeft then
+    FPlotter.RightAxisTitleVisible:= False
+  else if AValue=vatRight then
+    FPlotter.LeftAxisTitleVisible:= False;
 end;
 
 procedure TStatPlotterBar.SetHorizGridLinesVisible(AValue: Boolean);
@@ -900,6 +1001,9 @@ begin
   FBarMaxWidthPercent:= BAR_MAX_WIDTH_PERCENT_DEFAULT;
   FBarGradientLightnessIncrement:= GRADIENT_LIGHTNESS_INCREMENT_DEFAULT;
   FBarGradientDemarcationPercent:= GRADIENT_DEMARCATION_PERCENT_DEFAULT;
+
+  FOneColorPerTick:= False;
+  FColorIndexes:= nil;
 end;
 
 destructor TStatPlotterBar.Destroy;
@@ -1032,7 +1136,7 @@ begin
   if not TitleVisible then Exit;
 
   FTitleRect:= RectDeflate(FTitleRect, MARGIN_DEFAULT + TitleFrameWidth);
-  TextToWidth(FTitle, FTitleFont, FTitleRect.Width, ClientHeight, FTitleRowValues, True{DELETE!!!});
+  TextToWidth(FTitle, FTitleFont, FTitleRect.Width, ClientHeight, FTitleRowValues);
   FTitleRect.Bottom:= FTitleRect.Top + ClientHeight;
 end;
 
@@ -1233,10 +1337,19 @@ begin
   BottomHeight:= 0;
   LeftWidth:= 0;
   RightWidth:= 0;
-  TopHeightNew:= ApproxTextHeight(FTopAxisTitle, FTopAxisTitleFont, R.Width);
-  BottomHeightNew:= ApproxTextHeight(FBottomAxisTitle, FBottomAxisTitleFont, R.Width);
-  LeftWidthNew:= ApproxTextHeight(FLeftAxisTitle, FLeftAxisTitleFont, R.Height);
-  RightWidthNew:= ApproxTextHeight(FRightAxisTitle, FRightAxisTitleFont, R.Height);
+
+  TopHeightNew:= 0;
+  if TopAxisTitleVisible then
+    TopHeightNew:= ApproxTextHeight(FTopAxisTitle, FTopAxisTitleFont, R.Width);
+  BottomHeightNew:= 0;
+  if BottomAxisTitleVisible then
+    BottomHeightNew:= ApproxTextHeight(FBottomAxisTitle, FBottomAxisTitleFont, R.Width);
+  LeftWidthNew:= 0;
+  if LeftAxisTitleVisible then
+    LeftWidthNew:= ApproxTextHeight(FLeftAxisTitle, FLeftAxisTitleFont, R.Height);
+  RightWidthNew:= 0;
+  if RightAxisTitleVisible then
+    RightWidthNew:= ApproxTextHeight(FRightAxisTitle, FRightAxisTitleFont, R.Height);
 
   DeltaW:= 0;
   if TopAxisTitleVisible then
@@ -1269,10 +1382,14 @@ begin
     if (W<0) or (H<0) then
       raise Exception.Create('Too big text!');
 
-    TextToWidth(FTopAxisTitle, FTopAxisTitleFont, W, TopHeightNew, FTopAxisTitleRowValues);
-    TextToWidth(FBottomAxisTitle, FBottomAxisTitleFont, W, BottomHeightNew, FBottomAxisTitleRowValues);
-    TextToWidth(FLeftAxisTitle, FLeftAxisTitleFont, H, LeftWidthNew, FLeftAxisTitleRowValues);
-    TextToWidth(FRightAxisTitle, FRightAxisTitleFont, H, RightWidthNew, FRightAxisTitleRowValues);
+    if TopAxisTitleVisible then
+      TextToWidth(FTopAxisTitle, FTopAxisTitleFont, W, TopHeightNew, FTopAxisTitleRowValues);
+    if BottomAxisTitleVisible then
+      TextToWidth(FBottomAxisTitle, FBottomAxisTitleFont, W, BottomHeightNew, FBottomAxisTitleRowValues);
+    if LeftAxisTitleVisible then
+      TextToWidth(FLeftAxisTitle, FLeftAxisTitleFont, H, LeftWidthNew, FLeftAxisTitleRowValues);
+    if RightAxisTitleVisible then
+      TextToWidth(FRightAxisTitle, FRightAxisTitleFont, H, RightWidthNew, FRightAxisTitleRowValues);
   end;
 
   FTopAxisTitleRect.Top:= R.Top + (MARGIN_DEFAULT+FTopAxisTitleFrameWidth)*Ord(TopAxisTitleVisible);
@@ -1642,22 +1759,22 @@ end;
 
 function TStatPlotterCore.GetTopAxisTitleVisible: Boolean;
 begin
-  Result:= not SEmpty(FTopAxisTitle);
+  Result:= (not SEmpty(FTopAxisTitle)) and FTopAxisTitleVisible;
 end;
 
 function TStatPlotterCore.GetBottomAxisTitleVisible: Boolean;
 begin
-  Result:= not SEmpty(FBottomAxisTitle);
+  Result:= (not SEmpty(FBottomAxisTitle)) and FBottomAxisTitleVisible;
 end;
 
 function TStatPlotterCore.GetLeftAxisTitleVisible: Boolean;
 begin
-  Result:= not SEmpty(FLeftAxisTitle);
+  Result:= (not SEmpty(FLeftAxisTitle)) and FLeftAxisTitleVisible;
 end;
 
 function TStatPlotterCore.GetRightAxisTitleVisible: Boolean;
 begin
-  Result:= not SEmpty(FRightAxisTitle);
+  Result:= (not SEmpty(FRightAxisTitle)) and FRightAxisTitleVisible;
 end;
 
 function TStatPlotterCore.GetBottomAxisTicksVisible: Boolean;
@@ -2187,6 +2304,7 @@ begin
   FTopAxisTitleFrameColor:= FRAME_COLOR_DEFAULT;
   FTopAxisTitleFrameWidth:= FRAME_WIDTH_DEFAULT;
   FTopAxisTitleRect:= Rect(0,0,0,0);
+  FTopAxisTitleVisible:= True;
   //BottomAxisTitle
   FBottomAxisTitle:= EmptyStr;
   FBottomAxisTitleRowValues:= nil;
@@ -2195,6 +2313,7 @@ begin
   FBottomAxisTitleFrameColor:= FRAME_COLOR_DEFAULT;
   FBottomAxisTitleFrameWidth:= FRAME_WIDTH_DEFAULT;
   FBottomAxisTitleRect:= Rect(0,0,0,0);
+  FBottomAxisTitleVisible:= True;
   //LeftAxisTitle
   FLeftAxisTitle:= EmptyStr;
   FLeftAxisTitleRowValues:= nil;
@@ -2203,6 +2322,7 @@ begin
   FLeftAxisTitleFrameColor:= FRAME_COLOR_DEFAULT;
   FLeftAxisTitleFrameWidth:= FRAME_WIDTH_DEFAULT;
   FLeftAxisTitleRect:= Rect(0,0,0,0);
+  FLeftAxisTitleVisible:= True;
   //RightAxisTitle
   FRightAxisTitle:= EmptyStr;
   FRightAxisTitleRowValues:= nil;
@@ -2211,6 +2331,7 @@ begin
   FRightAxisTitleFrameColor:= FRAME_COLOR_DEFAULT;
   FRightAxisTitleFrameWidth:= FRAME_WIDTH_DEFAULT;
   FRightAxisTitleRect:= Rect(0,0,0,0);
+  FRightAxisTitleVisible:= True;
 
   //TopAxisTicks
   FTopAxisTicksValues:= nil;
@@ -2462,11 +2583,18 @@ begin
   FPlotter.PNG.BarsVert(Rects, FPlotter.GraphColors, FPlotter.GraphColors,
                BarFrameWidth, BarGradientLightnessIncrement,
                BarGradientDemarcationPercent, BarMaxWidthPercent, BarMinMarginPercent,
-               FPlotter.LeftAxisGridLinesCoords, FPlotter.LeftAxisTicksValues, M);
+               FPlotter.LeftAxisGridLinesCoords, FPlotter.LeftAxisTicksValues, M,
+               FOneColorPerTick, FColorIndexes);
   //FPlotter.SVG.BarsVert(Rects, FPlotter.GraphColors, FPlotter.GraphColors,
   //             BarFrameWidth, BarGradientLightnessIncrement,
   //             BarGradientDemarcationPercent, BarMaxWidthPercent,
-  //             FPlotter.LeftAxisGridLinesCoords, FPlotter.LeftAxisTicksValues, M);
+  //             FPlotter.LeftAxisGridLinesCoords, FPlotter.LeftAxisTicksValues, M,
+  //             FOneColorPerTick, FColorIndexes);
+end;
+
+function TStatPlotterVertHist.GetYTicksFont: TFont;
+begin
+  Result:= FPlotter.LeftAxisTicksFont;
 end;
 
 function TStatPlotterVertHist.GetXTicksFont: TFont;
@@ -2474,16 +2602,16 @@ begin
   Result:= FPlotter.BottomAxisTicksFont;
 end;
 
+procedure TStatPlotterVertHist.SetYTicksFont(AValue: TFont);
+begin
+  FPlotter.LeftAxisTicksFont.Assign(AValue);
+  FPlotter.RightAxisTicksFont.Assign(AValue);
+end;
+
 procedure TStatPlotterVertHist.SetXTicks(AValues: TStrVector);
 begin
   FPlotter.TopAxisTicksCaptions:= AValues;
   FPlotter.BottomAxisTicksCaptions:= AValues;
-end;
-
-procedure TStatPlotterVertHist.SetXTicksVisible(AValue: Boolean);
-begin
-  FPlotter.BottomAxisTicksVisible:= AValue;
-  FPlotter.TopAxisTicksVisible:= AValue;
 end;
 
 procedure TStatPlotterVertHist.SetXTicksFont(AValue: TFont);

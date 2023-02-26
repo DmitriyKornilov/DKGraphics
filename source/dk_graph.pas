@@ -8,6 +8,9 @@ uses
   Classes, SysUtils, Graphics, GraphUtil,
   DK_Math, DK_Vector, DK_Matrix, DK_StrUtils;
 
+const
+  BAR_MAX_WIDTH_PX = 80;
+
   function RectInc(const ARect: TRect; const dX1, dY1, dX2, dY2: Integer): TRect;
   function RectDeflate(const ARect: TRect; const ADelta: Integer): TRect;
   function RectDeflate(const ARect: TRect; const ADeltaX, ADeltaY: Integer): TRect;
@@ -15,6 +18,8 @@ uses
   function RectInflate(const ARect: TRect; const ADeltaX, ADeltaY: Integer): TRect;
 
 type
+  TDirectionType = (dtHorizontal, dtVertical);
+
   TRectVector = array of TRect;
   procedure VDimRectVector(var V: TRectVector; const Size: Integer);
   procedure VAppendRectVector(var V: TRectVector; const ARect: TRect);
@@ -27,16 +32,19 @@ type
   {---COLORS-------------------------------------------------------------------}
   //Color lightness change
   function ColorIncLightness(const AColor: TColor; const LightnessIncrement: Integer): TColor;
+  function ColorFromVector(const AColorVector: TColorVector; const AIndex: Integer): TColor;
 
   {---BARS RECTS --------------------------------------------------------------}
   function BarsVertRects(const ARect: TRect;
                        const AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues,
-                             AYDataValues: TIntVector): TRectVector;
+                             AYDataValues: TIntVector;
+                       const AMaxBarWidthInPixels: Integer = BAR_MAX_WIDTH_PX): TRectVector;
   function BarsHorizRects(const ARect: TRect;
                         const AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                         const AXTicksCoords, AXTicksValues,
-                              AXDataValues: TIntVector): TRectVector;
+                              AXDataValues: TIntVector;
+                        const AMaxBarWidthInPixels: Integer = BAR_MAX_WIDTH_PX): TRectVector;
 
   {---TEXT OUT RECTS----------------------------------------------------------}
   function StringHorizRect(const ARect: TRect;
@@ -154,15 +162,21 @@ begin
   Result:= HLSToColor(H, L, S);
 end;
 
+function ColorFromVector(const AColorVector: TColorVector; const AIndex: Integer): TColor;
+begin
+  Result:= AColorVector[AIndex mod Length(AColorVector)];
+end;
+
 // Bars rects
 
 function BarsVertRects(const ARect: TRect;
                        const AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues,
-                             AYDataValues: TIntVector): TRectVector;
+                             AYDataValues: TIntVector;
+                       const AMaxBarWidthInPixels: Integer = BAR_MAX_WIDTH_PX): TRectVector;
 var
   i, BarsCount, BarWidth, BarHeight, BarMargin: Integer;
-  N, Value, MaxValue, FirstBarLeftCoord: Integer;
+  Value, MaxValue, FirstBarLeftCoord: Integer;
 begin
   Result:= nil;
   if VIsNil(AYDataValues) then Exit;
@@ -173,6 +187,7 @@ begin
   BarWidth:= ARect.Width div BarsCount;
   Value:= Trunc(Percent(ARect.Width, AMaxBarWidthPercent));
   BarWidth:= Min(BarWidth, Value);
+  BarWidth:= Min(BarWidth, AMaxBarWidthInPixels);
   //constraint min bar margin
   BarMargin:= Round(Percent(BarWidth, AMinBarMarginPercent));
 
@@ -198,10 +213,11 @@ end;
 function BarsHorizRects(const ARect: TRect;
                         const AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                         const AXTicksCoords, AXTicksValues,
-                             AXDataValues: TIntVector): TRectVector;
+                             AXDataValues: TIntVector;
+                        const AMaxBarWidthInPixels: Integer = BAR_MAX_WIDTH_PX): TRectVector;
 var
   i, BarsCount, BarWidth, BarHeight, BarMargin: Integer;
-  N, Value, MaxValue, FirstBarTopCoord: Integer;
+  Value, MaxValue, FirstBarTopCoord: Integer;
 begin
   Result:= nil;
   if VIsNil(AXDataValues) then Exit;
@@ -212,6 +228,7 @@ begin
   BarHeight:= ARect.Height div BarsCount;
   Value:= Trunc(Percent(ARect.Height, AMaxBarWidthPercent));
   BarHeight:= Min(BarHeight, Value);
+  BarHeight:= Min(BarHeight, AMaxBarWidthInPixels);
   //constraint min bar margin
   BarMargin:= Round(Percent(BarHeight, AMinBarMarginPercent));
 

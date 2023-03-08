@@ -8,7 +8,8 @@ unit DKGraphics;
 interface
 
 uses
-  DK_Graph, DK_PNGDrawer, DK_StatPlotter, DK_SVGWriter, LazarusPackageIntf;
+  DK_Graph, DK_PNGDrawer, DK_StatPlotter, DK_SVGWriter, DK_BGRADrawer, 
+  LazarusPackageIntf;
 
 implementation
 

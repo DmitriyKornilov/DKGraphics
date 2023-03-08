@@ -9,7 +9,7 @@
       <PathDelim Value="\"/>
       <SearchPaths>
         <OtherUnitFiles Value="source"/>
-        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)\"/>
+        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
     <Files>
@@ -29,8 +29,15 @@
         <Filename Value="source\dk_svgwriter.pas"/>
         <UnitName Value="DK_SVGWriter"/>
       </Item>
+      <Item>
+        <Filename Value="source\dk_bgradrawer.pas"/>
+        <UnitName Value="DK_BGRADrawer"/>
+      </Item>
     </Files>
     <RequiredPkgs>
+      <Item>
+        <PackageName Value="BGRABitmapPack"/>
+      </Item>
       <Item>
         <PackageName Value="DKUtils"/>
       </Item>

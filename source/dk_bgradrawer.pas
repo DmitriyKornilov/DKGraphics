@@ -1,34 +1,36 @@
-unit DK_PNGDrawer;
+unit DK_BGRADrawer;
 
 {$mode ObjFPC}{$H+}
 
 interface
 
 uses
-  Classes, SysUtils, Graphics, GraphType,
-  DK_Graph, DK_Vector, DK_Matrix, DK_Math, DK_StrUtils;
+  Classes, SysUtils, Graphics, BGRABitmap, BGRABitmapTypes,
+  DK_StrUtils, DK_Vector, DK_Matrix, DK_Graph, DK_Math;
 
 const
-  BACKGROUND_COLOR_DEFAULT = clWhite;
+  COLOR_BG_DEFAULT = clWhite;
 
 type
 
-  { TPNGDrawer }
+  { TBGRADrawer }
 
-  TPNGDrawer = class(TObject)
+  TBGRADrawer = class(TObject)
   private
-    FPNG: TPortableNetworkGraphic;
+    FBMP: TBGRABitmap;
   public
-    constructor Create(const AWidth, AHeight: Integer);
+    constructor Create(const AWidth, AHeight: Integer;
+                       const AColor: TColor = COLOR_BG_DEFAULT);
     destructor  Destroy; override;
+
     procedure Draw(const ACanvas: TCanvas;
                    const X: Integer = 0;
-                   const Y: Integer = 0);
-    procedure SaveToFile(const AFileName: String);
+                   const Y: Integer = 0;
+                   const AOpaque: Boolean = True);
     procedure SaveToStream(AStream: TMemoryStream);
+    procedure SaveToFile(const AFileName: String);
 
     {---LINES------------------------------------------------------------------}
-    //Line
     procedure Line(const X1, Y1, X2, Y2: Integer;
                        const AColor: TColor;
                        const AWidth: Integer;
@@ -38,6 +40,7 @@ type
                         const ALineWidth, APointRadius: Integer;
                         const AStyle: TPenStyle;
                         const AColorIndexes: TIntVector = nil);
+
     {---CIRCLES----------------------------------------------------------------}
     procedure Circle(const X, Y, R: Integer;
                      const AColor: TColor);
@@ -45,16 +48,16 @@ type
     {---RECTS------------------------------------------------------------------}
     //Rectangle with background single color fill
     procedure Rect(const ARect: TRect;
-                       const ABGColor:TColor);
+                   const ABGColor:TColor);
     //Rectangle with background single gradient fill
     procedure Rect(const ARect: TRect;
-                       const AStartBGColor, AEndBGColor:TColor;
-                       const ADirection: TGradientDirection);
+                   const AStartBGColor, AEndBGColor:TColor;
+                   const ADirection: TGradientDirection);
     //Rectangle with background double gradient fill
     procedure Rect(const ARect: TRect;
-                       const AStartBGColor1, AEndBGColor1, AStartBGColor2, AEndBGColor2: TColor;
-                       const ADirection1, ADirection2, ADemarcationDirection: TGradientDirection;
-                       const ADemarcationPercent: Byte);
+                   const AStartBGColor1, AEndBGColor1, AStartBGColor2, AEndBGColor2: TColor;
+                   const ADirection1, ADirection2, ADemarcationDirection: TGradientDirection;
+                   const ADemarcationPercent: Byte);
 
     {---FRAMES--------------------------------------------------------------------}
     //Color frame with background single color fill
@@ -166,56 +169,48 @@ type
 
 implementation
 
-{ TPNGDrawer }
+{ TBGRADrawer }
 
-constructor TPNGDrawer.Create(const AWidth, AHeight: Integer);
-var
-  R: TRect;
+constructor TBGRADrawer.Create(const AWidth, AHeight: Integer;
+                               const AColor: TColor = COLOR_BG_DEFAULT);
 begin
-  FPNG:= TPortableNetworkGraphic.Create;
-  FPNG.Width:= AWidth;
-  FPNG.Height:= AHeight;
-  R:= Classes.Rect(0, 0, FPNG.Width, FPNG.Height);
-  Rect(R, BACKGROUND_COLOR_DEFAULT);
+  FBMP:= TBGRABitmap.Create(AWidth, AHeight, ColorToBGRA(AColor));
 end;
 
-destructor TPNGDrawer.Destroy;
+destructor TBGRADrawer.Destroy;
 begin
-  FreeAndNil(FPNG);
+  FreeAndNil(FBMP);
   inherited Destroy;
 end;
 
-procedure TPNGDrawer.Draw(const ACanvas: TCanvas;
-                          const X: Integer = 0;
-                          const Y: Integer = 0);
+procedure TBGRADrawer.Draw(const ACanvas: TCanvas;
+                           const X: Integer = 0;
+                           const Y: Integer = 0;
+                           const AOpaque: Boolean = True);
 begin
-  ACanvas.Draw(X, Y, FPNG);
+  FBMP.Draw(ACanvas, X, Y, AOpaque);
 end;
 
-procedure TPNGDrawer.SaveToFile(const AFileName: String);
+procedure TBGRADrawer.SaveToStream(AStream: TMemoryStream);
 begin
-  FPNG.SaveToFile(SFileName(AFileName, 'png'));
+  FBMP.SaveToStreamAsPng(AStream);
 end;
 
-procedure TPNGDrawer.SaveToStream(AStream: TMemoryStream);
+procedure TBGRADrawer.SaveToFile(const AFileName: String);
 begin
-  FPNG.SaveToStream(AStream);
+  FBMP.SaveToFileUTF8(SFileName(AFileName, 'png'));
 end;
 
-procedure TPNGDrawer.Line(const X1, Y1, X2, Y2: Integer;
-                                 const AColor: TColor;
-                                 const AWidth: Integer;
-                                 const AStyle: TPenStyle);
+procedure TBGRADrawer.Line(const X1, Y1, X2, Y2: Integer;
+                       const AColor: TColor;
+                       const AWidth: Integer;
+                       const AStyle: TPenStyle);
 begin
-  FPNG.Canvas.Brush.Style:= bsSolid;
-  FPNG.Canvas.Brush.Color:= BACKGROUND_COLOR_DEFAULT;
-  FPNG.Canvas.Pen.Color:= AColor;
-  FPNG.Canvas.Pen.Width:= AWidth;
-  FPNG.Canvas.Pen.Style:= AStyle;
-  FPNG.Canvas.Line(X1, Y1, X2, Y2);
+  FBMP.PenStyle:= AStyle;
+  FBMP.DrawLineAntialias(X1, Y1, X2, Y2, ColorToBGRA(AColor), AWidth);
 end;
 
-procedure TPNGDrawer.LinesYAtX(const AXCoords: TIntVector; const AYCoords: TIntMatrix;
+procedure TBGRADrawer.LinesYAtX(const AXCoords: TIntVector; const AYCoords: TIntMatrix;
                         const AColors: TColorVector;
                         const ALineWidth, APointRadius: Integer;
                         const AStyle: TPenStyle;
@@ -239,46 +234,50 @@ begin
       Circle(X2, Y2, APointRadius, Color);
     end;
   end;
+
 end;
 
-procedure TPNGDrawer.Circle(const X, Y, R: Integer; const AColor: TColor);
+procedure TBGRADrawer.Circle(const X, Y, R: Integer;
+                             const AColor: TColor);
 var
-  Delta: Integer;
+  Color: TBGRAPixel;
 begin
-  if R<=0 then Exit;
-  FPNG.Canvas.Pen.Style:= psSolid;
-  FPNG.Canvas.Pen.Color:= AColor;
-  FPNG.Canvas.Brush.Style:= bsSolid;
-  FPNG.Canvas.Brush.Color:= AColor;
-  Delta:= R div 2;
-  FPNG.Canvas.Ellipse(X-Delta, Y-Delta, X+Delta, Y+Delta);
-  FPNG.Canvas.FloodFill(X, Y, AColor, fsBorder{fsSurface});
+  Color:= ColorToBGRA(AColor);
+  FBMP.EllipseAntialias(X, Y, R, R, Color, 1, Color);
 end;
 
-procedure TPNGDrawer.Rect(const ARect: TRect; const ABGColor: TColor);
+procedure TBGRADrawer.Rect(const ARect: TRect; const ABGColor: TColor);
 begin
-  FPNG.Canvas.Pen.Style:= psSolid;
-  FPNG.Canvas.Brush.Style:= bsSolid;
-  FPNG.Canvas.Brush.Color:= ABGColor;
-  FPNG.Canvas.FillRect(ARect);
+  FBMP.FillRect(ARect, ColorToBGRA(ABGColor));
 end;
 
-procedure TPNGDrawer.Rect(const ARect: TRect;
-                                 const AStartBGColor,AEndBGColor: TColor;
-                                 const ADirection: TGradientDirection);
+procedure TBGRADrawer.Rect(const ARect: TRect;
+                           const AStartBGColor, AEndBGColor:TColor;
+                           const ADirection: TGradientDirection);
+var
+  P1, P2: TPointF;
+  N: Single;
 begin
-  FPNG.Canvas.Pen.Style:= psSolid;
-  FPNG.Canvas.Brush.Style:= bsSolid;
-  FPNG.Canvas.Brush.Color:= AEndBGColor;
-  FPNG.Canvas.GradientFill(ARect, AStartBGColor, AEndBGColor, ADirection);
+  if ADirection=gdVertical then
+  begin
+    N:= ARect.Left + ARect.Width/2;
+    P1:= PointF(N, ARect.Top);
+    P2:= PointF(N, ARect.Bottom);
+  end
+  else begin //gdHorizontal
+    N:= ARect.Top + ARect.Height/2;
+    P1:= PointF(ARect.Left, N);
+    P2:= PointF(ARect.Right, N);
+  end;
+  FBMP.GradientFill(ARect.Left, ARect.Top, ARect.Right, ARect.Bottom,
+                    ColorToBGRA(AStartBGColor), ColorToBGRA(AEndBGColor),
+                    gtLinear, P1, P2, dmSet);
 end;
 
-procedure TPNGDrawer.Rect(const ARect: TRect;
-                                 const AStartBGColor1, AEndBGColor1,
-                                       AStartBGColor2, AEndBGColor2: TColor;
-                                 const ADirection1, ADirection2,
-                                       ADemarcationDirection: TGradientDirection;
-                                 const ADemarcationPercent: Byte);
+procedure TBGRADrawer.Rect(const ARect: TRect;
+                   const AStartBGColor1, AEndBGColor1, AStartBGColor2, AEndBGColor2: TColor;
+                   const ADirection1, ADirection2, ADemarcationDirection: TGradientDirection;
+                   const ADemarcationPercent: Byte);
 var
   Rect1, Rect2: TRect;
   DemarcationValue: Integer;
@@ -307,7 +306,7 @@ begin
   end;
 end;
 
-procedure TPNGDrawer.Frame(const ARect: TRect;
+procedure TBGRADrawer.Frame(const ARect: TRect;
                                   const ABGColor, AFrameColor: TColor;
                                   const AFrameWidth: Integer);
 var
@@ -318,7 +317,7 @@ begin
   Rect(ARect, ABGColor);
 end;
 
-procedure TPNGDrawer.Frame(const ARect: TRect;
+procedure TBGRADrawer.Frame(const ARect: TRect;
                        const AStartBGColor, AEndBGColor, AFrameColor: TColor;
                        const AFrameWidth: Integer;
                        const ADirection: TGradientDirection);
@@ -330,7 +329,7 @@ begin
   Rect(ARect, AStartBGColor, AEndBGColor, ADirection);
 end;
 
-procedure TPNGDrawer.Frame(const ARect: TRect;
+procedure TBGRADrawer.Frame(const ARect: TRect;
                        const AStartBGColor1, AEndBGColor1,
                              AStartBGColor2, AEndBGColor2, AFrameColor: TColor;
                        const AFrameWidth: Integer;
@@ -346,7 +345,7 @@ begin
            ADirection1, ADirection2, ADemarcationDirection, ADemarcationPercent);
 end;
 
-procedure TPNGDrawer.BarVert(const ARect: TRect;
+procedure TBGRADrawer.BarVert(const ARect: TRect;
                              const AMainBGColor, AFrameColor: TColor;
                              const AFrameWidth, AIncLightess: Integer;
                              const ADemarcationPercent: Byte);
@@ -361,7 +360,7 @@ begin
            gdHorizontal, gdHorizontal, gdVertical, ADemarcationPercent);
 end;
 
-procedure TPNGDrawer.BarsVert(const ARect: TRect;
+procedure TBGRADrawer.BarsVert(const ARect: TRect;
                        const AMainBGColor, AFrameColor: TColor;
                        const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
@@ -377,7 +376,7 @@ begin
                 AIncLightess, ADemarcationPercent);
 end;
 
-procedure TPNGDrawer.BarsVert(const ARect: TRect;
+procedure TBGRADrawer.BarsVert(const ARect: TRect;
                        const AMainBGColors, AFrameColors: TColorVector;
                        const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
@@ -399,7 +398,7 @@ begin
   end;
 end;
 
-procedure TPNGDrawer.BarsVert(const ARects: TRectVector;
+procedure TBGRADrawer.BarsVert(const ARects: TRectVector;
                        const AMainBGColors, AFrameColors: TColorVector;
                        const AFrameWidth, AIncLightess: Integer;
                        const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
@@ -430,7 +429,7 @@ begin
   end;
 end;
 
-procedure TPNGDrawer.BarHoriz(const ARect: TRect;
+procedure TBGRADrawer.BarHoriz(const ARect: TRect;
                         const AMainBGColor, AFrameColor: TColor;
                         const AFrameWidth, AIncLightess: Integer;
                         const ADemarcationPercent: Byte);
@@ -445,7 +444,7 @@ begin
            gdVertical, gdVertical, gdHorizontal, ADemarcationPercent);
 end;
 
-procedure TPNGDrawer.BarsHoriz(const ARect: TRect;
+procedure TBGRADrawer.BarsHoriz(const ARect: TRect;
                          const AMainBGColor, AFrameColor: TColor;
                          const AFrameWidth, AIncLightess: Integer;
                          const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
@@ -461,7 +460,7 @@ begin
                 AIncLightess, ADemarcationPercent);
 end;
 
-procedure TPNGDrawer.BarsHoriz(const ARect: TRect;
+procedure TBGRADrawer.BarsHoriz(const ARect: TRect;
                          const AMainBGColors, AFrameColors: TColorVector;
                          const AFrameWidth, AIncLightess: Integer;
                          const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
@@ -483,7 +482,7 @@ begin
   end;
 end;
 
-procedure TPNGDrawer.BarsHoriz(const ARects: TRectVector;
+procedure TBGRADrawer.BarsHoriz(const ARects: TRectVector;
                          const AMainBGColors, AFrameColors: TColorVector;
                          const AFrameWidth, AIncLightess: Integer;
                          const ADemarcationPercent, AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
@@ -514,7 +513,7 @@ begin
   end;
 end;
 
-procedure TPNGDrawer.StringHoriz(const ARect: TRect;
+procedure TBGRADrawer.StringHoriz(const ARect: TRect;
                           const ABGColor: TColor;
                           const AString: String;
                           const AFont: TFont;
@@ -523,15 +522,17 @@ var
   R: TRect;
 begin
   R:= StringHorizRect(ARect, AString, AFont, AHorizPosition);
-  FPNG.Canvas.Brush.Style:= bsSolid;
-  FPNG.Canvas.Brush.Color:= ABGColor;
-  FPNG.Canvas.Font.Assign(AFont);
-  FPNG.Canvas.Font.Orientation:= 0;
-  Rect(R, clMoneyGreen);
-  FPNG.Canvas.TextOut(R.Left+1, R.Top, AString);
+  FBMP.FontAntialias:= True;
+  FBMP.FontName:= AFont.Name;
+  FBMP.FontQuality:= fqSystemClearType;
+  FBMP.FontHeight:= -AFont.Height;
+  FBMP.FontStyle:= AFont.Style;
+  FBMP.FontOrientation:= 0;
+  Rect(R, ABGColor);
+  FBMP.TextOut(R.Left+1, R.Top, AString, ColorToBGRA(AFont.Color));
 end;
 
-procedure TPNGDrawer.StringsHoriz(const ARect: TRect;
+procedure TBGRADrawer.StringsHoriz(const ARect: TRect;
                            const ABGColor: TColor;
                            const AStrings: TStrVector;
                            const AFont: TFont;
@@ -547,7 +548,7 @@ begin
     StringHoriz(Rects[i], ABGColor, AStrings[i], AFont, AHorizPosition);
 end;
 
-procedure TPNGDrawer.TextHoriz(const ARect: TRect;
+procedure TBGRADrawer.TextHoriz(const ARect: TRect;
                         const ABGColor: TColor;
                         const AText: TStrVector;
                         const AFont: TFont;
@@ -563,7 +564,7 @@ begin
   StringsHoriz(R, ABGColor, AText, AFont, RowHeight, AHorizPosition);
 end;
 
-procedure TPNGDrawer.StringVert(const ARect: TRect;
+procedure TBGRADrawer.StringVert(const ARect: TRect;
                          const ABGColor: TColor;
                          const AString: String;
                          const AFont: TFont;
@@ -572,14 +573,17 @@ var
   R: TRect;
 begin
   R:= StringVertRect(ARect, AString, AFont, AVertPosition);
-  FPNG.Canvas.Brush.Style:= bsSolid;
-  FPNG.Canvas.Brush.Color:= ABGColor;
-  FPNG.Canvas.Font.Assign(AFont);
-  FPNG.Canvas.Font.Orientation:= 900;
-  FPNG.Canvas.TextOut(R.Left, R.Bottom, AString);
+  FBMP.FontAntialias:= True;
+  FBMP.FontName:= AFont.Name;
+  FBMP.FontQuality:= fqSystemClearType;
+  FBMP.FontHeight:= -AFont.Height;
+  FBMP.FontStyle:= AFont.Style;
+  FBMP.FontOrientation:= 900;
+  Rect(R, ABGColor);
+  FBMP.TextOut(R.Left+1, R.Top, AString, ColorToBGRA(AFont.Color));
 end;
 
-procedure TPNGDrawer.StringsVert(const ARect: TRect;
+procedure TBGRADrawer.StringsVert(const ARect: TRect;
                          const ABGColor: TColor;
                          const AStrings: TStrVector;
                          const AFont: TFont;
@@ -595,7 +599,7 @@ begin
     StringVert(Rects[i], ABGColor, AStrings[i], AFont, AVertPosition);
 end;
 
-procedure TPNGDrawer.TextVert(const ARect: TRect;
+procedure TBGRADrawer.TextVert(const ARect: TRect;
                        const ABGColor: TColor;
                        const AText: TStrVector;
                        const AFont: TFont;

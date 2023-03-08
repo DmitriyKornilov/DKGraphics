@@ -32,9 +32,28 @@ type
   {---COLORS-------------------------------------------------------------------}
   //Color lightness change
   function ColorIncLightness(const AColor: TColor; const LightnessIncrement: Integer): TColor;
-  function ColorFromVector(const AColorVector: TColorVector; const AIndex: Integer): TColor;
 
-  {---BARS RECTS --------------------------------------------------------------}
+  function ColorFromVector(const AColorVector: TColorVector; const AIndex: Integer;
+                           const ASortIndexes: TIntVector = nil): TColor;
+
+
+  {---DATA COORDS--------------------------------------------------------------}
+  function DataCoordY(const ARect: TRect; const AYDataValue: Integer;
+                      const AYTicksCoords, AYTicksValues: TIntVector): Integer;
+  function DataCoordsY(const ARect: TRect;
+                       const AYDataValues, AYTicksCoords, AYTicksValues: TIntVector): TIntVector;
+  function DataCoordsY(const ARect: TRectVector;
+                       const AYDataValues: TIntMatrix;
+                       const AYTicksCoords, AYTicksValues: TIntVector): TIntMatrix;
+
+  function DataCoordX(const ARect: TRect; const AXDataValue: Integer;
+                      const AXTicksCoords, AXTicksValues: TIntVector): Integer;
+  function DataCoordsX(const ARect: TRect;
+                       const AXDataValues, AXTicksCoords, AXTicksValues: TIntVector): TIntVector;
+  function DataCoordsX(const ARect: TRectVector;
+                       const AXDataValues: TIntMatrix;
+                       const AXTicksCoords, AXTicksValues: TIntVector): TIntMatrix;
+  {---BARS RECTS---------------------------------------------------------------}
   function BarsVertRects(const ARect: TRect;
                        const AMaxBarWidthPercent, AMinBarMarginPercent: Byte;
                        const AYTicksCoords, AYTicksValues,
@@ -162,9 +181,102 @@ begin
   Result:= HLSToColor(H, L, S);
 end;
 
-function ColorFromVector(const AColorVector: TColorVector; const AIndex: Integer): TColor;
+function ColorFromVector(const AColorVector: TColorVector; const AIndex: Integer;
+                         const ASortIndexes: TIntVector = nil): TColor;
+var
+  k, n: Integer;
 begin
-  Result:= AColorVector[AIndex mod Length(AColorVector)];
+  n:= Length(ASortIndexes);
+  if n>0 then
+    k:= ASortIndexes[AIndex mod n]
+  else
+    k:= AIndex;
+  Result:= AColorVector[k mod Length(AColorVector)];
+end;
+
+//Data coords
+
+function DataCoordY(const ARect: TRect; const AYDataValue: Integer;
+                    const AYTicksCoords, AYTicksValues: TIntVector): Integer;
+var
+  MaxValue, DeltaY: Integer;
+begin
+  MaxValue:= VLast(AYTicksValues);
+  if not VSameIndexValue(AYDataValue, AYTicksValues, AYTicksCoords, Result) then
+  begin
+    DeltaY:= Round((AYDataValue/MaxValue)*ARect.Height);
+    Result:= ARect.Bottom - DeltaY;
+  end;
+end;
+
+function DataCoordsY(const ARect: TRect;
+     const AYDataValues, AYTicksCoords, AYTicksValues: TIntVector): TIntVector;
+var
+  i: Integer;
+begin
+  Result:= nil;
+  if VIsNil(AYDataValues) or VIsNil(AYTicksCoords) or VIsNil(AYTicksValues) then Exit;
+  VDim(Result, Length(AYDataValues));
+  for i:= 0 to High(AYDataValues) do
+    Result[i]:= DataCoordY(ARect, AYDataValues[i], AYTicksCoords, AYTicksValues);
+end;
+
+function DataCoordsY(const ARect: TRectVector;
+                     const AYDataValues: TIntMatrix;
+                     const AYTicksCoords, AYTicksValues: TIntVector): TIntMatrix;
+var
+  i: Integer;
+  V: TIntVector;
+begin
+  Result:= nil;
+  if MIsNil(AYDataValues) then Exit;
+  for i:= 0 to High(AYDataValues) do
+  begin
+    V:= DataCoordsY(ARect[i], AYDataValues[i], AYTicksCoords, AYTicksValues);
+    MAppend(Result, V);
+  end;
+end;
+
+function DataCoordX(const ARect: TRect; const AXDataValue: Integer;
+                    const AXTicksCoords, AXTicksValues: TIntVector): Integer;
+var
+  MaxValue, DeltaX: Integer;
+begin
+  MaxValue:= VLast(AXTicksValues);
+  if not VSameIndexValue(AXDataValue, AXTicksValues, AXTicksCoords, Result) then
+  begin
+    DeltaX:= Round((AXDataValue/MaxValue)*ARect.Width);
+    Result:= ARect.Left + DeltaX;
+  end;
+  Result:= Result + 1;
+end;
+
+function DataCoordsX(const ARect: TRect;
+   const AXDataValues, AXTicksCoords, AXTicksValues: TIntVector): TIntVector;
+var
+  i: Integer;
+begin
+  Result:= nil;
+  if VIsNil(AXDataValues) or VIsNil(AXTicksCoords) or VIsNil(AXTicksValues) then Exit;
+  VDim(Result, Length(AXDataValues));
+  for i:= 0 to High(AXDataValues) do
+    Result[i]:= DataCoordX(ARect, AXDataValues[i], AXTicksCoords, AXTicksValues);
+end;
+
+function DataCoordsX(const ARect: TRectVector;
+                       const AXDataValues: TIntMatrix;
+                       const AXTicksCoords, AXTicksValues: TIntVector): TIntMatrix;
+var
+  i: Integer;
+  V: TIntVector;
+begin
+  Result:= nil;
+  if MIsNil(AXDataValues) then Exit;
+  for i:= 0 to High(AXDataValues) do
+  begin
+    V:= DataCoordsX(ARect[i], AXDataValues[i], AXTicksCoords, AXTicksValues);
+    MAppend(Result, V);
+  end;
 end;
 
 // Bars rects
@@ -175,8 +287,8 @@ function BarsVertRects(const ARect: TRect;
                              AYDataValues: TIntVector;
                        const AMaxBarWidthInPixels: Integer = BAR_MAX_WIDTH_PX): TRectVector;
 var
-  i, BarsCount, BarWidth, BarHeight, BarMargin: Integer;
-  Value, MaxValue, FirstBarLeftCoord: Integer;
+  i, BarsCount, BarWidth, BarMargin: Integer;
+  Value, FirstBarLeftCoord: Integer;
 begin
   Result:= nil;
   if VIsNil(AYDataValues) then Exit;
@@ -194,19 +306,12 @@ begin
   FirstBarLeftCoord:= ARect.Left + BarMargin +
                    ((ARect.Width - BarMargin - BarsCount*BarWidth) div 2);
 
-  MaxValue:= VLast(AYTicksValues);
-
   for i:= 0 to High(AYDataValues) do
   begin
     Result[i].Bottom:= ARect.Bottom + 1;
     Result[i].Left:= FirstBarLeftCoord + i*BarWidth;
     Result[i].Right:= Result[i].Left + BarWidth - BarMargin;
-    if not VSameIndexValue(AYDataValues[i], AYTicksValues,
-                           AYTicksCoords, Result[i].Top) then
-    begin
-      BarHeight:= Round((AYDataValues[i]/MaxValue)*ARect.Height);
-      Result[i].Top:= Result[i].Bottom - BarHeight - 1;
-    end;
+    Result[i].Top:= DataCoordY(ARect, AYDataValues[i], AYTicksCoords, AYTicksValues);
   end;
 end;
 
@@ -216,8 +321,8 @@ function BarsHorizRects(const ARect: TRect;
                              AXDataValues: TIntVector;
                         const AMaxBarWidthInPixels: Integer = BAR_MAX_WIDTH_PX): TRectVector;
 var
-  i, BarsCount, BarWidth, BarHeight, BarMargin: Integer;
-  Value, MaxValue, FirstBarTopCoord: Integer;
+  i, BarsCount, BarHeight, BarMargin: Integer;
+  Value, FirstBarTopCoord: Integer;
 begin
   Result:= nil;
   if VIsNil(AXDataValues) then Exit;
@@ -235,19 +340,12 @@ begin
   FirstBarTopCoord:= ARect.Top + BarMargin +
                    ((ARect.Height - BarMargin - BarsCount*BarHeight) div 2);
 
-  MaxValue:= VLast(AXTicksValues);
   for i:= 0 to High(AXDataValues) do
   begin
     Result[i].Left:= ARect.Left;
     Result[i].Top:= FirstBarTopCoord + i*BarHeight;
     Result[i].Bottom:= Result[i].Top + BarHeight - BarMargin;
-    if not VSameIndexValue(AXDataValues[i], AXTicksValues,
-                           AXTicksCoords, Result[i].Right) then
-    begin
-      BarWidth:= Round((AXDataValues[i]/MaxValue)*ARect.Width);
-      Result[i].Right:= Result[i].Left + BarWidth;
-    end;
-    Result[i].Right:= Result[i].Right + 1;
+    Result[i].Right:= DataCoordX(ARect, AXDataValues[i], AXTicksCoords, AXTicksValues);
   end;
 end;
 
@@ -261,7 +359,6 @@ var
   W: Integer;
 begin
   Result:= ARect;
-  //Result.Left:= Result.Left + 1;
   W:= SWidth(AString, AFont);
   if AHorizPosition = taCenter then
     Result.Left:= ARect.Left + ((ARect.Width-W) div 2)

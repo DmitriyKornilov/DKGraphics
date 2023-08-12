@@ -1302,7 +1302,7 @@ begin
   if not TitleVisible then Exit;
 
   FTitleRect:= RectDeflate(FTitleRect, MARGIN_DEFAULT + TitleFrameWidth);
-  TextToWidth(FTitle, FTitleFont, FTitleRect.Width, ClientHeight, FTitleRowValues);
+  TextToWidth(FTitle, FTitleFont, FTitleRect.Width, ClientHeight, FTitleRowValues, True);
   FTitleRect.Bottom:= FTitleRect.Top + ClientHeight;
 end;
 
@@ -1381,7 +1381,7 @@ var
     for i:=0 to High(FLegend) do
     begin
       RowValues:= nil;
-      TextToWidth(FLegend[i], FLegendFont, W, H, RowValues);
+      TextToWidth(FLegend[i], FLegendFont, W, H, RowValues, True);
       FLegendValues[i]:= VCut(RowValues);
       if i<High(FLegend) then
         ItemHeights[i]:= H + LEGEND_VERT_MARGIN_DEFAULT
@@ -1549,13 +1549,13 @@ begin
       raise Exception.Create('Too big text!');
 
     if TopAxisTitleVisible then
-      TextToWidth(FTopAxisTitle, FTopAxisTitleFont, W, TopHeightNew, FTopAxisTitleRowValues);
+      TextToWidth(FTopAxisTitle, FTopAxisTitleFont, W, TopHeightNew, FTopAxisTitleRowValues, True);
     if BottomAxisTitleVisible then
-      TextToWidth(FBottomAxisTitle, FBottomAxisTitleFont, W, BottomHeightNew, FBottomAxisTitleRowValues);
+      TextToWidth(FBottomAxisTitle, FBottomAxisTitleFont, W, BottomHeightNew, FBottomAxisTitleRowValues, True);
     if LeftAxisTitleVisible then
-      TextToWidth(FLeftAxisTitle, FLeftAxisTitleFont, H, LeftWidthNew, FLeftAxisTitleRowValues);
+      TextToWidth(FLeftAxisTitle, FLeftAxisTitleFont, H, LeftWidthNew, FLeftAxisTitleRowValues, True);
     if RightAxisTitleVisible then
-      TextToWidth(FRightAxisTitle, FRightAxisTitleFont, H, RightWidthNew, FRightAxisTitleRowValues);
+      TextToWidth(FRightAxisTitle, FRightAxisTitleFont, H, RightWidthNew, FRightAxisTitleRowValues, True);
   end;
 
   FTopAxisTitleRect.Top:= R.Top + (MARGIN_DEFAULT+FTopAxisTitleFrameWidth)*Ord(TopAxisTitleVisible);

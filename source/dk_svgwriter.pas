@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Graphics,
-  DK_Graph, DK_Vector, DK_Matrix, DK_Math, DK_StrUtils;
+  DK_Graph, DK_Vector, DK_Matrix, DK_Math, DK_StrUtils, DK_Color;
 
 const
   STR_SPACES = '  ';

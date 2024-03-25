@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Graphics, BGRABitmap, BGRABitmapTypes,
-  DK_StrUtils, DK_Vector, DK_Matrix, DK_Graph, DK_Math;
+  DK_StrUtils, DK_Vector, DK_Matrix, DK_Graph, DK_Math, DK_Color;
 
 const
   COLOR_BG_DEFAULT = clWhite;

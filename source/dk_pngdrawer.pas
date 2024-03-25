@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Graphics, GraphType,
-  DK_Graph, DK_Vector, DK_Matrix, DK_Math, DK_StrUtils;
+  DK_Graph, DK_Vector, DK_Matrix, DK_Math, DK_StrUtils, DK_Color;
 
 const
   BACKGROUND_COLOR_DEFAULT = clWhite;

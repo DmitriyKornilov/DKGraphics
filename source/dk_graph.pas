@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Graphics, GraphUtil,
-  DK_Math, DK_Vector, DK_Matrix, DK_StrUtils;
+  DK_Math, DK_Vector, DK_Matrix, DK_StrUtils, DK_Color;
 
 const
   BAR_MAX_WIDTH_PX = 80;
@@ -30,9 +30,6 @@ type
   procedure VAppendPointVector(var V: TPointVector; const APoint: TPoint);
 
   {---COLORS-------------------------------------------------------------------}
-  //Color lightness change
-  function ColorIncLightness(const AColor: TColor; const LightnessIncrement: Integer): TColor;
-
   function ColorFromVector(const AColorVector: TColorVector; const AIndex: Integer;
                            const ASortIndexes: TIntVector = nil): TColor;
 
@@ -164,22 +161,6 @@ begin
 end;
 
 //Color utils
-
-function ColorIncLightness(const AColor: TColor; const LightnessIncrement: Integer): TColor;
-var
-  H, L, S: Byte;
-  Lightness: Integer;
-begin
-  ColorToHLS(AColor, H, L, S);
-  Lightness:= L + LightnessIncrement;
-  if Lightness<0 then
-    L:= 0
-  else if Lightness>255 then
-    L:= 255
-  else
-    L:= Lightness;
-  Result:= HLSToColor(H, L, S);
-end;
 
 function ColorFromVector(const AColorVector: TColorVector; const AIndex: Integer;
                          const ASortIndexes: TIntVector = nil): TColor;
